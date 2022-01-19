@@ -2,7 +2,8 @@ from student_base import student_base
 import time
 import numpy
 from typing import Dict
-from shapely.geometry import Point # ADDED IMPORT
+from shapely.geometry import Point, LineString, Polygon, MultiPolygon # ADDED IMPORT
+import geojson # ADDED IMPORT
 
 class my_flight_controller(student_base):
     """
@@ -120,13 +121,45 @@ class my_flight_controller(student_base):
                 self.navigate_to(greedy_fire.centroid.y, greedy_fire.centroid.x, 100, 'next fire', telemetry)
                 prev_fire = greedy_fire
         else:
-            pass
-        # IF NOT, DEAL WITH OTHER WATER
+            '''
+            # only searching for things inside of map bounds??
+            with open("./data/waterbodies.geojson") as f:
+                gj = geojson.load(f)
+            features = gj['features']
+            closest_water = {}
+            for fire in telemetry['fire_polygons']:
+                closest_water_distance = 100000000
+                closest_water_coord = Point(0,0)
+                for water in features:
+                    print("Current Water: " + str(water['geometry']))
+                    if water['geometry']['type'] == 'LineString':
+                        water_body = LineString(water['geometry']['coordinates'])
+                    elif water['geometry']['type'] == 'Polygon':
+                        # assuming its a polygon
+                        water_body = Polygon(water['geometry']['coordinates'][0])
+                    elif water['geometry']['type'] == 'MultiPolygon':
+                        #water_body = MultiPolygon(water[['geometry', []], ['coordinates', []]])
+                        pass
+                    print("WATER: " + str(water_body))
+                    distance = fire.distance(water_body)
+                    print("Flag 1")
+                    if distance < closest_water_distance:
+                        closest_water_distance = distance
+                    print("Flag 2")
+                print("Flag 3")
+                closest_water[fire] = closest_water_distance
+            print("Dictionary: " + str(closest_water))
+            '''
+            # add in closest point
+            # find closest water
+            # add fire-water-coord pair to dictionary
+            # IF NOT, DEAL WITH OTHER WATER
             # use different gain function
             # map out how far each fire is from water -- from geojson
             # pick a point in the center of each fire (centroid), distance from there to nearest water as well as lat and long of the water
-                # store in dictionary
+            # store in dictionary
 """
+'''
         self.refill_tank(telemetry)
 
         prev_fire = None
@@ -145,16 +178,19 @@ class my_flight_controller(student_base):
 
             self.navigate_to(greedy_fire.centroid.y, greedy_fire.centroid.x, 100, 'next fire', telemetry)
             prev_fire = greedy_fire
-            """
+
         
-'''
+
         while True:
             if round(telemetry['water_pct_remaining'], 2))
 '''
+"""
+        
+    
 
-        
-        
-        
+
+
+
 # This bit of code just makes it so that this class actually runs when executed from the command line,
 # rather than just being silently defined.
 
