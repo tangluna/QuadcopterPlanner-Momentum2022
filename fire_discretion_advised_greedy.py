@@ -24,6 +24,7 @@ class my_flight_controller(student_base):
     def refill_tank(self, telemetry):
         """
         TODO dummy water retrieving! from one location. need to locate different or closest water source?
+        make go to nearest water source??
         """
         print("Get to water")
         goalLat = 42.3608 # water
@@ -57,11 +58,12 @@ class my_flight_controller(student_base):
             err = numpy.linalg.norm([lat - telemetry['latitude'], long - telemetry['longitude']])
         print("Navigation finished")
     
-    def calculate_gain_greedy(self, fire, lat, long):
+    def calculate_gain_greedy(self, fire, lat, long, telemetry):
         """
         TODO LATER CONVERT TO TIME INSTEAD OF DISTANCE, ADD IN WATER DISTANCE
         """
         gain = fire.area/fire.distance(Point(lat, long))
+        print("Current water level: " + str(telemetry['water_pct_remaining']))
         print("Current fire: " + str(fire))
         print("Current gain: " + str(gain))
         return gain
@@ -93,15 +95,48 @@ class my_flight_controller(student_base):
         homeLat = telemetry['latitude']
         homeLon = telemetry['longitude']
         self.takeoff()
+
+        # ADD UP AREAS OF ALL FIRES -- IF LESS THAN 60, DO CURRENT CODE
+        total_area = 0
+        for fire in telemetry['fire_polygons']:
+            total_area += fire.area
+        
+        print("Total area: " + str(total_area))
+
+        if total_area <= .00000056709:
+            print("Fires can be extinguished with only 1 fill.")
+            self.refill_tank(telemetry) # nearest water source
+            prev_fire = None
+            while True:
+                highest_gain = -1.0
+                greedy_fire = None
+                for fire in telemetry['fire_polygons']:
+                    if prev_fire == None or not (prev_fire != None and fire.equals(prev_fire)): #short circuit eval
+                        current_gain = self.calculate_gain_greedy(fire, telemetry['latitude'], telemetry['longitude'], telemetry)
+                        if current_gain > highest_gain:
+                            highest_gain = current_gain
+                            greedy_fire = fire
+                print("Next fire: " + str(greedy_fire))
+                self.navigate_to(greedy_fire.centroid.y, greedy_fire.centroid.x, 100, 'next fire', telemetry)
+                prev_fire = greedy_fire
+        else:
+            pass
+        # IF NOT, DEAL WITH OTHER WATER
+            # use different gain function
+            # map out how far each fire is from water -- from geojson
+            # pick a point in the center of each fire (centroid), distance from there to nearest water as well as lat and long of the water
+                # store in dictionary
+"""
         self.refill_tank(telemetry)
 
         prev_fire = None
+        
         while True:
             highest_gain = -1.0
             greedy_fire = None
             for fire in telemetry['fire_polygons']:
                 if prev_fire == None or not (prev_fire != None and fire.equals(prev_fire)): #short circuit eval
-                    current_gain = self.calculate_gain_greedy(fire, telemetry['latitude'], telemetry['longitude'])
+                    current_gain = self.calculate_gain_greedy(fire, telemetry['latitude'], telemetry['longitude'], telemetry)
                     if current_gain > highest_gain:
                         highest_gain = current_gain
                         greedy_fire = fire
@@ -110,7 +145,8 @@ class my_flight_controller(student_base):
 
             self.navigate_to(greedy_fire.centroid.y, greedy_fire.centroid.x, 100, 'next fire', telemetry)
             prev_fire = greedy_fire
-            """ condition to refill water tank if below a threshold?"""
+            """
+        
 '''
         while True:
             if round(telemetry['water_pct_remaining'], 2))
