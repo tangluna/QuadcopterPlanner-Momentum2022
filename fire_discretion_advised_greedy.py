@@ -121,7 +121,7 @@ class my_flight_controller(student_base):
                 self.navigate_to(greedy_fire.centroid.y, greedy_fire.centroid.x, 100, 'next fire', telemetry)
                 prev_fire = greedy_fire
         else:
-            '''
+"""            
             # only searching for things inside of map bounds??
             with open("./data/waterbodies.geojson") as f:
                 gj = geojson.load(f)
@@ -135,10 +135,9 @@ class my_flight_controller(student_base):
                     if water['geometry']['type'] == 'LineString':
                         water_body = LineString(water['geometry']['coordinates'])
                     elif water['geometry']['type'] == 'Polygon':
-                        # assuming its a polygon
                         water_body = Polygon(water['geometry']['coordinates'][0])
                     elif water['geometry']['type'] == 'MultiPolygon':
-                        #water_body = MultiPolygon(water[['geometry', []], ['coordinates', []]])
+                        #water_body = MultiPolygon(water['geometry']['coordinates'])
                         pass
                     print("WATER: " + str(water_body))
                     distance = fire.distance(water_body)
