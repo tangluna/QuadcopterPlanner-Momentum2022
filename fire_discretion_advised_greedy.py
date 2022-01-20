@@ -45,19 +45,27 @@ class my_flight_controller(student_base):
             time.sleep(5)
         print("Water level: " + str(round(telemetry['water_pct_remaining'], 2)) + '%')
     
-    def navigate_to(self, lat, long, alt, description, telemetry):
+    def extinguish_fire(self, lat, long, alt, description, telemetry, fire):
         """
         TODO add description!
         """
         print("Navigating to: (" + str(lat) + ", " + str(long) + ")")
         self.goto(lat, long, alt)
-        err = numpy.linalg.norm([lat - telemetry['latitude'], long - telemetry['longitude']])
+        err = numpy.linalg.norm([lat - self.telemetry['latitude'], long - self.telemetry['longitude']])
         tol = 0.0001 # Approximately 50 feet tolerance
         while err > tol:
             print('Aircraft is enroute to ' + description)
             time.sleep(10)
             err = numpy.linalg.norm([lat - telemetry['latitude'], long - telemetry['longitude']])
-        print("Navigation finished")
+        old_fire_pct = telemetry['fires_pct_remaining']
+        curr_fire_pct = 0
+        while old_fire_pct - curr_fire_pct > 0.01:
+            old_fire_pct = self.telemetry['fires_pct_remaining']
+            time.sleep(2)
+            curr_fire_pct = self.telemetry['fires_pct_remaining']
+            print("Waiting for fire to extinguish. Current fire pct: " + str(curr_fire_pct))
+            print("Error: " + str(old_fire_pct - curr_fire_pct))
+        print("Fire extinguished finished")
     
     def calculate_gain_greedy(self, fire, lat, long, telemetry):
         """
@@ -104,7 +112,7 @@ class my_flight_controller(student_base):
         
         print("Total area: " + str(total_area))
 
-        if total_area <= .00000056709:
+        if total_area <= .0000056709:
             print("Fires can be extinguished with only 1 fill.")
             self.refill_tank(telemetry) # nearest water source
             prev_fire = None
@@ -118,9 +126,10 @@ class my_flight_controller(student_base):
                             highest_gain = current_gain
                             greedy_fire = fire
                 print("Next fire: " + str(greedy_fire))
-                self.navigate_to(greedy_fire.centroid.y, greedy_fire.centroid.x, 100, 'next fire', telemetry)
+                self.extinguish_fire(greedy_fire.centroid.y, greedy_fire.centroid.x, 100, 'next fire', telemetry, greedy_fire)
                 prev_fire = greedy_fire
         else:
+            pass
 """            
             # only searching for things inside of map bounds??
             with open("./data/waterbodies.geojson") as f:
@@ -183,7 +192,7 @@ class my_flight_controller(student_base):
         while True:
             if round(telemetry['water_pct_remaining'], 2))
 '''
-"""
+
         
     
 
