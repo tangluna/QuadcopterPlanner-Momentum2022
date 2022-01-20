@@ -112,7 +112,7 @@ class my_flight_controller(student_base):
         
         print("Total area: " + str(total_area))
 
-        if total_area <= .0000056709:
+        if total_area <= .00000056709:
             print("Fires can be extinguished with only 1 fill.")
             self.refill_tank(telemetry) # nearest water source
             prev_fire = None
