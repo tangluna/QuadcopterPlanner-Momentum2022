@@ -28,8 +28,8 @@ class my_flight_controller(student_base):
         make go to nearest water source??
         """
         print("Get to water")
-        goalLat = 42.3608 # water
-        goalLon = -70.9904
+        goalLat = 42.98514#42.9851 # water
+        goalLon = -70.61884#-70.614
         goalAlt = 100 
         self.goto(goalLat, goalLon, goalAlt)
         err = numpy.linalg.norm([goalLat - telemetry['latitude'], goalLon - telemetry['longitude']])
@@ -40,7 +40,7 @@ class my_flight_controller(student_base):
             err = numpy.linalg.norm([goalLat - telemetry['latitude'], goalLon - telemetry['longitude']])
         print("Picking up water")
         water_start_time = time.time()
-        while(time.time() - water_start_time < 60.0):
+        while(round(telemetry['water_pct_remaining'], 2) < 59.0):
             print("Water level: " + str(round(telemetry['water_pct_remaining'], 2)) + '%')
             time.sleep(5)
         print("Water level: " + str(round(telemetry['water_pct_remaining'], 2)) + '%')
@@ -112,11 +112,13 @@ class my_flight_controller(student_base):
         
         print("Total area: " + str(total_area))
 
-        if total_area <= .00000056709:
+        if True:
             print("Fires can be extinguished with only 1 fill.")
             self.refill_tank(telemetry) # nearest water source
             prev_fire = None
             while True:
+                if (telemetry['water_pct_remaining'] < 10.0):
+                    self.refill_tank(telemetry)
                 highest_gain = -1.0
                 greedy_fire = None
                 for fire in telemetry['fire_polygons']:
