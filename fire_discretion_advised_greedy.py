@@ -28,9 +28,23 @@ class my_flight_controller(student_base):
         make go to nearest water source??
         """
         print("Get to water")
-        goalLat = 42.98514#42.9851 # water
-        goalLon = -70.61884#-70.614
-        goalAlt = 100 
+        if telemetry["latitude"] < 42.98575 and telemetry['longitude']< -70.6162:
+            goalLat = 42.98514#42.9851 # water
+            goalLon = -70.61884#-70.614
+            goalAlt = 100 
+        elif telemetry["latitude"] < 42.9864 and telemetry['longitude'] >= -70.6162:
+            goalLat = 42.9851 # water
+            goalLon = -70.6141
+            goalAlt = 100 
+        elif telemetry["latitude"] > 42.98575 and telemetry['longitude'] < -70.6162:
+            goalLat = 42.9865 # water
+            goalLon = -70.6189
+            goalAlt = 100 
+        else:
+            goalLat = 42.986 # water
+            goalLon = -70.6112
+            goalAlt = 100  
+        print("Navigating to: (" + str(goalLat) + ", " + str(goalLon) + ")")
         self.goto(goalLat, goalLon, goalAlt)
         err = numpy.linalg.norm([goalLat - telemetry['latitude'], goalLon - telemetry['longitude']])
         tol = 0.0001 # Approximately 50 feet tolerance
@@ -40,7 +54,7 @@ class my_flight_controller(student_base):
             err = numpy.linalg.norm([goalLat - telemetry['latitude'], goalLon - telemetry['longitude']])
         print("Picking up water")
         water_start_time = time.time()
-        while(round(telemetry['water_pct_remaining'], 2) < 59.0):
+        while(round(telemetry['water_pct_remaining'], 2) < 99):
             print("Water level: " + str(round(telemetry['water_pct_remaining'], 2)) + '%')
             time.sleep(5)
         print("Water level: " + str(round(telemetry['water_pct_remaining'], 2)) + '%')
@@ -71,7 +85,7 @@ class my_flight_controller(student_base):
         """
         TODO LATER CONVERT TO TIME INSTEAD OF DISTANCE, ADD IN WATER DISTANCE
         """
-        gain = fire.area/fire.distance(Point(lat, long))
+        gain = fire.area/(fire.distance(Point(lat, long)))
         print("Current water level: " + str(telemetry['water_pct_remaining']))
         print("Current fire: " + str(fire))
         print("Current gain: " + str(gain))
